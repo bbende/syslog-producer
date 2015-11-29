@@ -4,7 +4,7 @@ Utility to generate syslog messages over UDP or TCP.
 
 ## Usage
 
-SyslogProducer <tcp-single|tcp-multi|udp> <port> <num logs> <delay millis> <delay every>
+    SyslogProducer <tcp-single|tcp-multi|udp> <port> <num logs> <delay millis> <delay every>
 
 * tcp-single sends all messages over a single tcp connection, messages delimited by new lines
 * tcp-multi sends each message over a new connection
@@ -16,6 +16,6 @@ SyslogProducer <tcp-single|tcp-multi|udp> <port> <num logs> <delay millis> <dela
 
 Example - Send a million messages over UDP to port 7087, sleeping for 1ms every 20 messages:
 
-java -jar target/syslog-producer-1.0-SNAPSHOT.jar udp 7087 1000000 1 20
+    java -jar target/syslog-producer-1.0-SNAPSHOT.jar udp 7087 1000000 1 20
 
 
