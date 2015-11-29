@@ -12,7 +12,7 @@ public class SyslogProducer {
     static final ByteBuffer buf = ByteBuffer.allocate(1024);
     static final byte[] MESSAGE = "<34>Oct 13 22:14:15 localhost this is the body of the message".getBytes(Charset.forName("UTF-8"));
 
-    public void produceMultiConnection(int port, int numLogs, long delayMillis) {
+    public void produceMultiConnection(int port, int numLogs, long delayMillis, long delayEvery) {
         final InetSocketAddress address = new InetSocketAddress("localhost", port);
 
         for (int i=0; i < numLogs; i++) {
@@ -28,16 +28,15 @@ public class SyslogProducer {
                     channel.write(buf);
                 }
 
-                if (delayMillis > 0) {
+                if (delayMillis > 0 && i % delayEvery == 0) {
                     try {
-                        //System.out.println("Sleeping for " + delayMillis + " millis");
                         Thread.sleep(delayMillis);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
 
-                if (i % 100 == 0) {
+                if (i % 10000 == 0) {
                     System.out.println("Sent " + i);
                 }
 
@@ -48,7 +47,7 @@ public class SyslogProducer {
         System.out.println("DONE!");
     }
 
-    public void produceTcpSingleConnection(int port, int numLogs, long delayMillis) {
+    public void produceTcpSingleConnection(int port, int numLogs, long delayMillis, long delayEvery) {
         final InetSocketAddress address = new InetSocketAddress("localhost", port);
 
         try (SocketChannel channel = SocketChannel.open()) {
@@ -63,16 +62,15 @@ public class SyslogProducer {
                     channel.write(buf);
                 }
 
-                if (delayMillis > 0) {
+                if (delayMillis > 0 && i % delayEvery == 0) {
                     try {
-                        //System.out.println("Sleeping for " + delayMillis + " millis");
                         Thread.sleep(delayMillis);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
 
-                if (i % 100 == 0) {
+                if (i % 10000 == 0) {
                     System.out.println("Sent " + i);
                 }
             }
@@ -82,7 +80,7 @@ public class SyslogProducer {
         System.out.println("DONE!");
     }
 
-    public void produceUdp(int port, int numLogs, long delayMillis) {
+    public void produceUdp(int port, int numLogs, long delayMillis, long delayEvery) {
         final InetSocketAddress address = new InetSocketAddress("localhost", port);
 
         try (DatagramChannel channel = DatagramChannel.open()) {
@@ -92,16 +90,15 @@ public class SyslogProducer {
                 buf.flip();
                 channel.send(buf, address);
 
-                if (delayMillis > 0) {
+                if (delayMillis > 0 && i % delayEvery == 0) {
                     try {
-                        //System.out.println("Sleeping for " + delayMillis + " millis");
                         Thread.sleep(delayMillis);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
 
-                if (i % 100 == 0) {
+                if (i % 10000 == 0) {
                     System.out.println("Sent " + i);
                 }
             }
@@ -112,8 +109,8 @@ public class SyslogProducer {
     }
 
     public static void main(String[] args) {
-        if (args == null || args.length !=4) {
-            System.err.println("USAGE: SyslogProducer <tcp-single|tcp-multi|udp> <port> <num logs> <delay millis>");
+        if (args == null || args.length !=5) {
+            System.err.println("USAGE: SyslogProducer <tcp-single|tcp-multi|udp> <port> <num logs> <delay millis> <delay every>");
             System.exit(1);
         }
 
@@ -121,16 +118,17 @@ public class SyslogProducer {
         final Integer port = Integer.parseInt(args[1]);
         final Integer numLogs = Integer.parseInt(args[2]);
         final Long delayMillis = Long.parseLong(args[3]);
+        final Long delayEvery = Long.parseLong(args[4]);
 
         final long startTime = System.currentTimeMillis();
 
         final SyslogProducer producer = new SyslogProducer();
         if ("tcp-multi".equals(type)) {
-            producer.produceMultiConnection(port, numLogs, delayMillis);
+            producer.produceMultiConnection(port, numLogs, delayMillis, delayEvery);
         } else if ("tcp-single".equals(type)) {
-            producer.produceTcpSingleConnection(port, numLogs, delayMillis);
+            producer.produceTcpSingleConnection(port, numLogs, delayMillis, delayEvery);
         } else {
-            producer.produceUdp(port, numLogs, delayMillis);
+            producer.produceUdp(port, numLogs, delayMillis, delayEvery);
         }
 
         System.out.println("Completed in " + ((System.currentTimeMillis() - startTime)/1000) + " seconds");
